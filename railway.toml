@@ -1,0 +1,25 @@
+# Railway multi-service configuration
+# Deploy each service separately in the Railway dashboard pointing to the relevant Dockerfile.
+#
+# Services to create:
+#   1. api          → backend/Dockerfile          (FastAPI web server)
+#   2. worker       → backend/Dockerfile.worker   (Celery worker)
+#   3. beat         → backend/Dockerfile.worker   (Celery Beat scheduler)
+#                     Override CMD: celery -A app.tasks.celery_app.celery_app beat --loglevel=info
+#   4. dashboard    → frontend/Dockerfile         (Next.js)
+#   5. redis        → Railway Redis plugin
+#
+# All backend services share the same environment variables (see backend/.env.example).
+# Frontend service needs NEXT_PUBLIC_* variables (see frontend/.env.local.example).
+#
+# Run migrations before first deploy:
+#   railway run --service api -- alembic upgrade head
+
+[build]
+builder = "dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
